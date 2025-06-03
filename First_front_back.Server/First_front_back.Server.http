@@ -1,0 +1,23 @@
+@rootURL = http://localhost:5223
+
+GET {{rootURL}}/weatherforecast/
+Accept: application/json
+
+###
+GET {{rootURL}}/api/contacts
+Accept: application/json
+
+###
+
+###
+PUT {{rootURL}}/api/contacts/2
+Content-Type: application/json
+{
+    "name": "Marek"
+}
+###
+POST {{rootURL}}/api/contacts
+Accept: application/json
+{
+
+}
