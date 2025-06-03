@@ -119,7 +119,7 @@ First_front_back/
 ##  API Endpoints
 
 | Metoda | Endpoint | Opis |
-| :-- | :-- | :-- | :-- |
+| -- | -- | -- | -- |
 | `POST` | `/api/contacts/login` | Logowanie użytkownika |
 | `GET` | `/api/contacts` | Pobierz wszystkie kontakty | 
 | `GET` | `/api/contacts/{id}` | Pobierz kontakt po ID |
