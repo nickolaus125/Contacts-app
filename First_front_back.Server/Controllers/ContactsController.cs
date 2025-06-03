@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
+using System.ComponentModel.DataAnnotations;
 
 namespace First_front_back.Server.Controllers
 {
@@ -21,7 +22,7 @@ namespace First_front_back.Server.Controllers
 
         public static string HashPassword(string password)
         {
-            return BCrypt.Net.BCrypt.HashPassword(password);
+            return BCrypt.Net.BCrypt.EnhancedHashPassword(password, 12);
         }
 
 
@@ -31,7 +32,21 @@ namespace First_front_back.Server.Controllers
             return Ok(await _context.Contacts.ToListAsync());
         }
 
-        [HttpGet("{id}")]
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var contact = await _context.Contacts
+                .FirstOrDefaultAsync(c => c.Email == request.Email);
+
+            if (contact == null || !BCrypt.Net.BCrypt.EnhancedVerify(request.Password, contact.Password)) 
+            {
+                return Unauthorized("Invalid credentials");
+            }
+
+            return Ok(new { Message = "Login successful" });
+        }
+
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<List<Contact>>> GetContactById(int id)
         {
             var contact = await _context.Contacts.FindAsync(id);
@@ -64,7 +79,7 @@ namespace First_front_back.Server.Controllers
             {
                 return NotFound();
             }
-            contact.Id = updatedContact.Id;
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             contact.Name = updatedContact.Name;
             contact.Surname = updatedContact.Surname;
             contact.Email = updatedContact.Email;
@@ -93,7 +108,14 @@ namespace First_front_back.Server.Controllers
             return NoContent();
         }
 
+        public class LoginRequest
+        {
+            [Required] public string Email { get; set; }
+            [Required] public string Password { get; set; }
+        }
 
 
     }
+
+
 }

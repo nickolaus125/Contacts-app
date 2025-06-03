@@ -37,14 +37,26 @@ function App() {
         setLoginData({ ...loginData, [e.target.name]: e.target.value });
     }
 
-    const loging = (e) => {
+    const loging = async (e) => {
         e.preventDefault();
-        const foundName = contacts.find(contact => contact.email === loginData.login)
-        if (foundName.password === loginData.password)
-        {
-            setIsLoggedIn(true);
+        try {
+            const response = await fetch('http://localhost:5223/api/contacts/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: loginData.login,
+                    password: loginData.password
+                })
+            });
+            if (response.ok) {
+                setIsLoggedIn(true);
+            } else {
+                setIsLoggedIn(false);
+            }
+        } catch (error) {
+            setIsLoggedIn(false);
         }
-    }
+    };
     
 
     const logOut = (e) => {
@@ -57,7 +69,6 @@ function App() {
             method: 'DELETE'
         });
         if (response.ok) {
-            // Usuñ kontakt lokalnie z listy
             setContacts(contacts.filter(contact => contact.id !== id));
         } else {
             alert('Deleting failed');
@@ -140,7 +151,6 @@ function App() {
         : <table className="table table-striped" aria-labelledby="tabelLabel">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Name</th>
                     <th>Surname</th>
                     <th>Show</th>
@@ -152,7 +162,6 @@ function App() {
                 {contacts.map(contact =>
                     <>
                 <tr key={contact.id}>
-                    <td>{ contact.id}</td>
                     <td>{ contact.name}</td>
                     <td>{contact.surname}</td>
                     <td><button onClick={() => toggleInfo(contact.id)}>Show more</button></td>
