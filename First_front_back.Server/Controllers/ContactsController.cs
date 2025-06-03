@@ -1,11 +1,9 @@
 ﻿using First_front_back.Server.Data;
 using First_front_back.Server.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
 using System.ComponentModel.DataAnnotations;
+using First_front_back.Server.Services;
 
 namespace First_front_back.Server.Controllers
 {
@@ -15,24 +13,26 @@ namespace First_front_back.Server.Controllers
     {
 
         private readonly First_front_backContext _context;
-        public ContactsController(First_front_backContext context)
+        private readonly IJwtService _jwtService;
+        public ContactsController(First_front_backContext context, IJwtService jwtService)
         {
             _context = context;
+            _jwtService = jwtService;
         }
 
-        public static string HashPassword(string password)
+        public static string HashPassword(string password) //funkcja hashujaca
         {
             return BCrypt.Net.BCrypt.EnhancedHashPassword(password, 12);
         }
 
 
-    [HttpGet]
+    [HttpGet]   //pobranie kontaktow z bazy
         public async  Task<ActionResult<List<Contact>>> GetContacts()
         {
             return Ok(await _context.Contacts.ToListAsync());
         }
 
-        [HttpPost("login")]
+        [HttpPost("login")]     // logowanie
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var contact = await _context.Contacts
@@ -46,7 +46,7 @@ namespace First_front_back.Server.Controllers
             return Ok(new { Message = "Login successful" });
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}")]       // pobranie kontaktu o danym id
         public async Task<ActionResult<List<Contact>>> GetContactById(int id)
         {
             var contact = await _context.Contacts.FindAsync(id);
@@ -57,7 +57,7 @@ namespace First_front_back.Server.Controllers
             return Ok(contact);
         }
 
-        [HttpPost]
+        [HttpPost]      // dodanie kontaktu
         public async Task<ActionResult<Contact>> AddContact([FromBody] Contact newContact)
         {
             if (newContact == null)
@@ -71,7 +71,7 @@ namespace First_front_back.Server.Controllers
             return CreatedAtAction(nameof(GetContactById), new { id = newContact.Id }, newContact);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}")]           //aktualizacja
         public async Task<IActionResult> UpdateContact(int  id, [FromBody] Contact updatedContact)
         {
             var contact = await _context.Contacts.FindAsync(id);
@@ -94,7 +94,7 @@ namespace First_front_back.Server.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}")]    //usuniecie rekordu
         public async Task<IActionResult> DeleteContactById(int id) 
         {
             var contact = await _context.Contacts.FindAsync(id);
@@ -108,7 +108,7 @@ namespace First_front_back.Server.Controllers
             return NoContent();
         }
 
-        public class LoginRequest
+        public class LoginRequest       //klasa dla danych logowania
         {
             [Required] public string Email { get; set; }
             [Required] public string Password { get; set; }
